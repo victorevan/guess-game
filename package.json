@@ -1,9 +1,11 @@
 {
   "name": "guess-game",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Multiplayer game where you have to guess what the word is being drawn.",
+  "main": "server/server.js",
   "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,6 +20,9 @@
   },
   "homepage": "https://github.com/victorevan/guess-game#readme",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "nodemon": "^2.0.22",
+    "serve-handler": "^6.1.5",
+    "socket.io": "^4.6.1"
   }
 }

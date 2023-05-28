@@ -17,42 +17,28 @@ const io = new Server(server, {
   },
 });
 
-const rooms = {};
-
-// create a room
-io.on('createRoom', (roomName, callback) => {
-  const room = {
-    id: uuid(), // generate a unique id for the new room, that way we don't need to deal with duplicates.
-    name: roomName,
-    sockets: []
-  };
-  rooms[room.id] = room;
-  // have the socket join the room they've just created.
-  joinRoom(socket, room);
-  callback();
-});
-
-// when player joins a room
-io.on ("joinRoom", (roomName, callback) => {
-  const room = room[roomName];
-  joinRoom(socket, room);
-  callback();
-});
-
-// When player leaves the room
-io.on("leaveRoom", (callback) => {
-  leaveRoom(socket);
-  callback();
-});
 
 // Players connection to the server
 io.on("connection", (socket) => {
   console.log(`connected: ${socket.id}`);
 
-  socket.on("join_room", (data) => {
+  socket.on("join_lobby", (data) => {
     socket.join(data);
-    console.log(`User with ID: ${socket.id} joined room: ${data}`);
-  })
+    console.log(`User with ID: ${socket.id} joined lobby: ${data}`);
+  });
+
+  socket.on("send_message", (data) => {
+    socket.to(data.lobby).emit("receive_message", data);
+  });
+
+  socket.on("create_lobby", (data) => {
+    socket.join(data);
+    console.log(`User with ID: ${socket.id} created lobby: ${data}`);
+  });
+  
+  socket.on("send_message", (data) => {
+    socket.to(data.lobby).emit("receive_message", data);
+  });
 
   socket.on("disconnect", () => {
     console.log(`disconnect: ${socket.id}`);

@@ -1,30 +1,34 @@
 import './App.css';
 import io from 'socket.io-client';
 import { useState } from 'react';
+import ChatTest from './ChatTest';
 
 const socket = io('http://localhost:3001');
 
 function App() {
   const [name, setName] = useState('');
-  const [creatingRoom, isCreatingRoom] = useState("");
-  const [joiningRoom, isJoiningRoom] = useState("");
+  const [lobby, setLobby] = useState('');
+  // const [creatingLobby, isCreatingLobby] = useState(false);
+  // const [joiningLobby, isJoiningLobby] = useState(false);
 
-  const joinRoom = () => {
-    if (name !== "" && joiningRoom === "") {
-      socket.emit("join_room", joiningRoom);
+
+
+  const joinLobby = () => {
+    if (name !== "" && lobby !== "") {
+      socket.emit("join_lobby", lobby);
+      // isJoiningLobby(true);
     }
   };
 
-  const createRoom = () => {
-    if (name !== "" && createRoom === "") {
-      socket.emit("create_room", creatingRoom);
-    }
+  const createLobby = () => {
+    var randomLobbyNumber = Math.floor(Math.random() * 10000) + 1;
+    socket.emit("create_lobby", `${randomLobbyNumber}`);
   };
 
   return (
     <div className="App">
-      <header className="App-header">Guess Game
-      <form className='Menu'>
+      <header className="App-header">Guess Game 
+      <div className='Menu'>
         <input 
         type="text" 
         placeholder="Enter your name"
@@ -33,12 +37,21 @@ function App() {
           setName(event.target.value);
         }}
         />
-        <button type="submit" onClick={joinRoom}>Join Game</button>
-        <button type="submit" onClick={createRoom}>Create Game</button>
-      </form>
-      <div>
-        <h1>About</h1>
+      <input
+      type="text"
+      placeholder="Enter lobby ID"
+      value={lobby}
+      onChange={(event) => {
+        setLobby(event.target.value);
+      }}
+      />
+        <button onClick={joinLobby}>Join Game</button>
+        <button onClick={createLobby}>Create Game</button>
       </div>
+      <div>
+        <h2>About</h2>
+      </div>
+      <ChatTest socket={socket} name={name} lobby={lobby} />
       </header>
     </div>
   );

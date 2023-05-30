@@ -1,32 +1,56 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react';
+import { Socket } from 'socket.io-client';
 
-function ChatTest({ socket, name, lobby }) {
-  const [currentMessage, setCurrentMessage] = useState("");
-  const [messageList, setMessageList] = useState([]);
+type MessageData = {
+  lobby: number;
+  author: string;
+  message: string;
+  time: string;
+};
+
+type ChatTestProps = {
+  socket: Socket;
+  name: string;
+  lobby: number;
+};
+
+function ChatTest({ socket, name, lobby }: ChatTestProps) {
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [messageList, setMessageList] = useState<MessageData[]>([]);
+
+  const addMessage = useMemo(
+    () => (data: MessageData) => {
+      setMessageList((list) => [...list, data]);
+    },
+    []
+  );
+
+  useEffect(() => {
+    socket.on('receive_message', addMessage);
+
+    // this clean-up function prevents duplicate listeners on re-renders
+    return () => {
+      socket.off('receive_message', addMessage);
+    };
+  }, [socket, addMessage]);
 
   const sendMessage = async () => {
-    if (currentMessage !== "") {
-      const messageData = {
+    if (currentMessage !== '') {
+      const messageData: MessageData = {
         lobby: lobby,
         author: name,
         message: currentMessage,
         time:
           new Date(Date.now()).getHours() +
-          ":" +
+          ':' +
           new Date(Date.now()).getMinutes(),
       };
 
-      await socket.emit("send_message", messageData);
-      setMessageList((list) => [...list, messageData]);
-      setCurrentMessage("");
+      await socket.emit('send_message', messageData);
+      setMessageList((messageList) => [...messageList, messageData]);
+      setCurrentMessage('');
     }
   };
-
-  useEffect(() => {
-    socket.on("receive_message", (data) => {
-      setMessageList((list) => [...list, data]);
-    });
-  }, [socket]);
 
   return (
     <div className="chat-window">
@@ -38,8 +62,9 @@ function ChatTest({ socket, name, lobby }) {
           {messageList.map((messageContent) => {
             return (
               <div
+                key={messageContent.time}
                 className="message"
-                id={name === messageContent.author ? "you" : "other"}
+                id={name === messageContent.author ? 'you' : 'other'}
               >
                 <div>
                   <div className="message-content">
@@ -64,7 +89,7 @@ function ChatTest({ socket, name, lobby }) {
             setCurrentMessage(event.target.value);
           }}
           onKeyPress={(event) => {
-            event.key === "Enter" && sendMessage();
+            event.key === 'Enter' && sendMessage();
           }}
         />
         <button onClick={sendMessage}>&#9658;</button>
